@@ -23,6 +23,9 @@ uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
 if uploaded_file is not None:
     raw_data = json.load(uploaded_file)
     flat_data = flatten_org_chart(raw_data)
+    # Show the flattened data in Streamlit to verify
+    st.subheader("🔍 Preview Flattened Org Chart Data")
+    st.json(flat_data)
     data_json = json.dumps(flat_data)
 
     # Correctly escape JS template literal inside Python string
