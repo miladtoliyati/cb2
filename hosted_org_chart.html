@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Org Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@3.1.3"></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #chart {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+    <script>
+      const data = [{"id":"019c76ef-0cb4-4aa1-b6e5-3b5a2558753c","parentId":null,"name":"Brian Armstrong"},{"id":"d553f2b6-5b97-45fd-94b5-10b2c2fd6224","parentId":"019c76ef-0cb4-4aa1-b6e5-3b5a2558753c","name":"Emilie Cho"}, ... ]; // truncated here for brevity
+      const chart = new d3.OrgChart()
+        .container("#chart")
+        .data(data)
+        .nodeHeight(d => 80)
+        .nodeWidth(d => 240)
+        .childrenMargin(d => 40)
+        .compactMarginBetween(d => 15)
+        .compactMarginPair(d => 30)
+        .nodeContent(d => `
+          <div style="padding:10px;border-radius:6px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+            <div style="font-weight:bold;">\${d.data.name}</div>
+          </div>
+        `)
+        .render();
+    </script>
+  </body>
+</html>
