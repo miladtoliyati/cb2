@@ -1,3 +1,2 @@
 streamlit
 pyvis
-streamlit-d3-org-chart
