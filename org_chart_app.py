@@ -23,10 +23,9 @@ uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
 if uploaded_file is not None:
     raw_data = json.load(uploaded_file)
     flat_data = flatten_org_chart(raw_data)
-
     data_json = json.dumps(flat_data)
 
-    # Inject the HTML+JS for D3 org chart
+    # Correctly escape JS template literal inside Python string
     html_code = f"""
     <!DOCTYPE html>
     <html>
@@ -42,13 +41,13 @@ if uploaded_file is not None:
         const chart = new d3.OrgChart()
           .container("#chart")
           .data(data)
-          .nodeHeight((d) => 80)
-          .childrenMargin((d) => 40)
-          .compactMarginBetween((d) => 35)
-          .compactMarginPair((d) => 30)
+          .nodeHeight(d => 80)
+          .childrenMargin(d => 40)
+          .compactMarginBetween(d => 35)
+          .compactMarginPair(d => 30)
           .nodeContent((d, i, arr, state) => `
-            <div style='padding:10px;background:#ffffff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.1);'>
-              <div style='font-weight:bold;font-size:14px;'>${d.data.name}</div>
+            <div style="padding:10px;background:#ffffff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+              <div style="font-weight:bold;font-size:14px;">\${{d.data.name}}</div>
             </div>
           `)
           .render();
