@@ -2,6 +2,8 @@ import streamlit as st
 import json
 import uuid
 import streamlit.components.v1 as components
+import tempfile
+import os
 
 # Flatten nested org chart into D3-compatible structure
 def flatten_org_chart(data, parent_id=None):
@@ -23,14 +25,9 @@ uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
 if uploaded_file:
     raw_data = json.load(uploaded_file)
     flat_data = flatten_org_chart(raw_data)
+    data_json = json.dumps(flat_data).replace("</", "<\\/")
 
-    # Show flattened structure for debugging (optional)
-    # st.json(flat_data)
-
-    # Convert to JSON string safely for JS embedding
-    data_json = json.dumps(flat_data).replace("</", "<\\/")  # prevent HTML injection
-
-    html_code = f"""
+    html_template = f"""
     <!DOCTYPE html>
     <html>
       <head>
@@ -70,4 +67,8 @@ if uploaded_file:
     </html>
     """
 
-    components.html(html_code, height=800, scrolling=True)
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html", encoding="utf-8") as f:
+        f.write(html_template)
+        temp_path = f.name
+
+    components.iframe(f"file://{temp_path}", height=800, scrolling=True)
