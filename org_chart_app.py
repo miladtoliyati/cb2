@@ -5,25 +5,26 @@ import json
 import tempfile
 
 st.set_page_config(page_title="Org Chart", layout="wide")
-st.title("📊 Interactive Org Chart")
+st.title("📊 Upload Org Chart JSON")
 
-# Load the JSON file bundled with the app
-with open("org_chart.json", "r") as f:
-    data = json.load(f)
+uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
 
-# Recursive function to add nodes and edges
-def add_nodes_edges(net, node, parent=None):
-    name = node["name"]
-    net.add_node(name, label=name, title=name)
-    if parent:
-        net.add_edge(parent, name)
-    for child in node.get("children", []):
-        add_nodes_edges(net, child, name)
+if uploaded_file is not None:
+    data = json.load(uploaded_file)
 
-# Build Pyvis network
-net = Network(height="750px", width="100%", directed=True)
-net.barnes_hut()
-add_nodes_edges(net, data)
+    def add_nodes_edges(net, node, parent=None):
+        name = node["name"]
+        net.add_node(name, label=name, title=name)
+        if parent:
+            net.add_edge(parent, name)
+        for child in node.get("children", []):
+            add_nodes_edges(net, child, name)
 
-# Save and display the network
-with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp
+    net = Network(height="750px", width="100%", directed=True)
+    net.barnes_hut()
+    add_nodes_edges(net, data)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+        net.save_graph(tmp_file.name)
+        html = open(tmp_file.name, 'r', encoding='utf-8').read()
+        components.html(html, height=750, width=1000)
