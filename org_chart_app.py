@@ -5,7 +5,7 @@ import tempfile
 import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
-st.title("📊 Org Chart (Pyvis Top-Down)")
+st.title("📊 Org Chart (Pyvis Top-Down Layout)")
 
 uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
 if uploaded_file:
@@ -19,27 +19,26 @@ if uploaded_file:
             add_nodes_edges(net, child, node["name"])
 
     net = Network(height="750px", width="100%", directed=True)
-    net.set_options("""
-    var options = {
-      layout: {
-        hierarchical: {
-          enabled: true,
-          direction: 'UD',
-          sortMethod: 'directed'
-        }
-      },
-      physics: {
-        hierarchicalRepulsion: {
-          centralGravity: 0.0,
-          springLength: 100,
-          springConstant: 0.01,
-          nodeDistance: 120,
-          damping: 0.09
+    net.set_options(json.dumps({
+        "layout": {
+            "hierarchical": {
+                "enabled": True,
+                "direction": "UD",
+                "sortMethod": "directed"
+            }
         },
-        solver: 'hierarchicalRepulsion'
-      }
-    }
-    """)
+        "physics": {
+            "hierarchicalRepulsion": {
+                "centralGravity": 0.0,
+                "springLength": 100,
+                "springConstant": 0.01,
+                "nodeDistance": 120,
+                "damping": 0.09
+            },
+            "solver": "hierarchicalRepulsion"
+        }
+    }))
+
     add_nodes_edges(net, data)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
