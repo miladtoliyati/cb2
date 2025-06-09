@@ -1,35 +1,49 @@
 import streamlit as st
+from pyvis.network import Network
 import json
-import uuid
-from streamlit_d3_org_chart import d3_org_chart
-
-# Flatten nested org chart to flat list
-def flatten_org_chart(data, parent_id=None):
-    node_id = str(uuid.uuid4())
-    flat = [{
-        "id": node_id,
-        "parentId": parent_id,
-        "name": data["name"]
-    }]
-    for child in data.get("children", []):
-        flat.extend(flatten_org_chart(child, node_id))
-    return flat
+import tempfile
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
-st.title("📊 Interactive Org Chart (D3 + Expandable + Zoomable)")
+st.title("📊 Org Chart (Pyvis Top-Down)")
 
 uploaded_file = st.file_uploader("Upload your org_chart.json", type="json")
-
 if uploaded_file:
-    nested_data = json.load(uploaded_file)
-    flat_data = flatten_org_chart(nested_data)
+    data = json.load(uploaded_file)
 
-    d3_org_chart(
-        data=flat_data,
-        id_field="id",
-        parent_field="parentId",
-        title_field="name",
-        width=1000,
-        height=800,
-        key="org_chart"
-    )
+    def add_nodes_edges(net, node, parent=None):
+        net.add_node(node["name"], label=node["name"])
+        if parent:
+            net.add_edge(parent, node["name"])
+        for child in node.get("children", []):
+            add_nodes_edges(net, child, node["name"])
+
+    net = Network(height="750px", width="100%", directed=True)
+    net.set_options("""
+    var options = {
+      layout: {
+        hierarchical: {
+          enabled: true,
+          direction: 'UD',
+          sortMethod: 'directed'
+        }
+      },
+      physics: {
+        hierarchicalRepulsion: {
+          centralGravity: 0.0,
+          springLength: 100,
+          springConstant: 0.01,
+          nodeDistance: 120,
+          damping: 0.09
+        },
+        solver: 'hierarchicalRepulsion'
+      }
+    }
+    """)
+    add_nodes_edges(net, data)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+        path = tmp_file.name
+        net.save_graph(path)
+        html = open(path, 'r', encoding='utf-8').read()
+        components.html(html, height=800, scrolling=True)
